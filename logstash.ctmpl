@@ -1,0 +1,33 @@
+
+input {
+  http {}
+}
+
+output {
+  if [to] == "url"  {
+    http {
+      url => "%{url}"
+      http_method => "post"
+      format => "message"
+      content_type => "application/json"
+      automatic_retries => 5
+      message => "%{content}"
+      retry_non_idempotent => true
+    }
+  }
+  {{ range ls "webhooks" }}
+  if [to] == "{{.Key}}"  {
+    http {
+      url => "{{.Value}}"
+      http_method => "post"
+      format => "message"
+      content_type => "application/json"
+      automatic_retries => 5
+      message => "%{content}"
+      retry_non_idempotent => true
+    }
+  }
+  {{ end }}
+}
+
+
